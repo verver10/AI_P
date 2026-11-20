@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 's01053522183@gmail.com';
+    }
+
+    function isValidPrompt(data) {
+      return data.keys().hasAll(['title', 'category', 'content', 'createdAt'])
+        && data.keys().hasOnly(['title', 'category', 'content', 'createdAt'])
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 120
+        && data.category is string
+        && data.category.size() >= 1
+        && data.category.size() <= 40
+        && data.category in ['사진 합성', '스타일 변환', '캐릭터·포스터']
+        && data.content is string
+        && data.content.size() >= 1
+        && data.content.size() <= 20000
+        && data.createdAt is timestamp;
+    }
+
+    // Public read for guests; admin-only create, update, delete
+    match /prompts/{promptId} {
+      allow get: if isValidId(promptId);
+      allow list: if true;
+      allow create: if isAdmin()
+        && isValidId(promptId)
+        && isValidPrompt(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(promptId)
+        && isValidPrompt(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'content']);
+      allow delete: if isAdmin() && isValidId(promptId);
+    }
+  }
+}

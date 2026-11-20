@@ -1,0 +1,6 @@
+{
+  "name": "프롬프트 창고",
+  "description": "초보자를 위한 깔끔한 AI 프롬프트 모음 앱",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

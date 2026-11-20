@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "Prompt": {
+      "title": "Prompt",
+      "description": "An AI prompt item stored in the prompt warehouse for beginners.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the prompt.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the prompt.",
+          "enum": ["사진 합성", "스타일 변환", "캐릭터·포스터"],
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "content": {
+          "type": "string",
+          "description": "Full prompt text content preserving newlines, supporting over 1,000 characters.",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the prompt was created."
+        }
+      },
+      "required": ["title", "category", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/prompts/{promptId}": {
+      "schema": {
+        "$ref": "#/entities/Prompt"
+      },
+      "description": "Collection of AI prompts displayed on the single-page prompt warehouse."
+    }
+  }
+}
